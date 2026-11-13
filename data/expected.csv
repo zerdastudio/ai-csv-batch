@@ -1,0 +1,6 @@
+id,sentiment,topic,summary
+R001,positive,quality,
+R002,negative,quality,
+R005,positive,support,
+R008,negative,price,
+R010,negative,delivery,

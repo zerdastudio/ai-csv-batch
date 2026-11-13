@@ -1,0 +1,54 @@
+# Copy this file to config.toml and edit it. Paths are relative to this file.
+
+[task]
+input = "data/reviews.csv"
+id_column = "id"            # must be unique per row: it is how a stopped run resumes
+text_column = "review"      # the column the model reads
+output_name = "reviews_labeled.csv"
+instructions = """
+You read one customer review of a product sold online.
+Classify it and summarise it. Base every answer only on the text of the review.
+"""
+
+# One [[fields]] block per output column.
+# With `choices`, the model must answer with one of them; without, it writes free text.
+[[fields]]
+name = "sentiment"
+choices = ["positive", "neutral", "negative"]
+
+[[fields]]
+name = "topic"
+choices = ["quality", "delivery", "price", "support", "other"]
+
+[[fields]]
+name = "summary"
+description = "one sentence, at most 15 words, in English"
+
+# Providers are tried in this order. If one keeps failing on a row, the next one takes over.
+# Prices are in USD per million tokens: check them on the provider's pricing page, they change.
+[[providers]]
+name = "anthropic"
+model = "claude-opus-5-5"
+effort = "low"                 # low is usually enough for classification; raise it if answers are weak
+price_input_per_mtok = 4.00
+price_output_per_mtok = 20.00
+# For large files, a smaller model (for example claude-haiku-5-5) costs far less: try it on your sample.
+
+# A second provider as fallback. Uncomment, set a model, and put its key in .env.
+# [[providers]]
+# name = "openai"
+# model = ""
+# price_input_per_mtok = 0.0
+# price_output_per_mtok = 0.0
+
+# [[providers]]
+# name = "gemini"
+# model = ""
+# price_input_per_mtok = 0.0
+# price_output_per_mtok = 0.0
+
+[run]
+output_dir = "out"
+max_attempts = 4      # tries per provider for one row
+base_delay = 1.0      # seconds; doubles after each failed try
+max_delay = 30.0      # a pause asked by the provider (retry-after) is honoured up to 300 seconds instead
